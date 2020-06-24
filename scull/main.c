@@ -53,6 +53,7 @@ MODULE_AUTHOR("Alessandro Rubini, Jonathan Corbet");
 MODULE_LICENSE("Dual BSD/GPL");
 
 struct scull_dev *scull_devices;	/* allocated in scull_init_module */
+char receivedStr[40] = "";
 
 
 /*
@@ -427,7 +428,9 @@ long scull_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 	  case SCULL_IOCSQUANTUM: /* Set: arg points to the value */
 		if (! capable (CAP_SYS_ADMIN))
 			return -EPERM;
-		retval = __get_user(scull_quantum, (int __user *)arg);
+		// retval = __get_user(receivedStr, (int __user *)arg);
+		retval = copy_from_user(receivedStr, (char __user *)arg, strlen(arg));
+		printk("in SCULL_IOCSQUANTUM retval is : %s", receivedStr);
 		break;
 
 	  case SCULL_IOCTQUANTUM: /* Tell: arg is the value */
@@ -437,7 +440,10 @@ long scull_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 		break;
 
 	  case SCULL_IOCGQUANTUM: /* Get: arg is pointer to result */
-		retval = __put_user(scull_quantum, (int __user *)arg);
+	  	
+		// retval = __put_user(receivedStr, (char __user *)arg);
+		printk("in copy_to_user is : %s", receivedStr);
+		retval = copy_to_user((char __user *)arg, receivedStr, strlen(receivedStr));
 		break;
 
 	  case SCULL_IOCQQUANTUM: /* Query: return it (it's positive) */
